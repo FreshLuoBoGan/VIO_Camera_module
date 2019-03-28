@@ -1,0 +1,7 @@
+Removed Pin From Net: NetName=GND Pin=C21-1
+Removed Pin From Net: NetName=VBAT Pin=C21-2
+Removed Member From Class: ClassName=STM32F4_Schematics Member=C21
+Added Room: Name=Camera_Schematics
+Added Room: Name=IMU_Schematics
+Added Room: Name=STM32F4_Schematics
+Added Room: Name=USB3_Controller_Schematics

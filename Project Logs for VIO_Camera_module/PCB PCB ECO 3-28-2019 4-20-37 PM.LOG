@@ -1,0 +1,4 @@
+Added Pin To Net: NetName=SWCLK Pin=J2-3
+Added Room: Name=Camera_Schematics
+Added Room: Name=IMU_Schematics
+Added Room: Name=USB3_Controller_Schematics

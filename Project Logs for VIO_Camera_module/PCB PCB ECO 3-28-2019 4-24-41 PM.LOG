@@ -1,0 +1,13 @@
+Removed Pin From Net: NetName=GND Pin=C13-2
+Removed Pin From Net: NetName=GND Pin=C14-2
+Removed Pin From Net: NetName=GND Pin=C18-1
+Removed Pin From Net: NetName=GND Pin=C19-1
+Removed Pin From Net: NetName=VBAT Pin=LM2-1
+Removed Member From Class: ClassName=STM32F4_Schematics Member=C13
+Removed Member From Class: ClassName=STM32F4_Schematics Member=C14
+Removed Member From Class: ClassName=STM32F4_Schematics Member=C18
+Removed Member From Class: ClassName=STM32F4_Schematics Member=C19
+Removed Member From Class: ClassName=STM32F4_Schematics Member=LM2
+Removed Member From Class: ClassName=STM32F4_Schematics Member=R11
+Added Pin To Net: NetName=VBAT Pin=U5-21
+Added Pin To Net: NetName=VBAT Pin=U5-22

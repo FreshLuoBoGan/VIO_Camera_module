@@ -1,0 +1,38 @@
+Removed Pin From Net: NetName=+3.3 Pin=C8-1
+Removed Pin From Net: NetName=GND Pin=C8-2
+Removed Pin From Net: NetName=GND Pin=C9-2
+Removed Pin From Net: NetName=+3.3 Pin=C10-1
+Removed Pin From Net: NetName=GND Pin=C10-2
+Change Component Footprint: Designator=C8 Old Footprint=CAPC3413X12N New Footprint=_0603
+Change Component Footprint: Designator=C9 Old Footprint=CAPC3413X12N New Footprint=_0603
+Change Component Footprint: Designator=C10 Old Footprint=CAPC3413X12N New Footprint=_0603
+Change Component Footprint: Designator=C11 Old Footprint=CAPC3413X12N New Footprint=_0603
+Change Component Footprint: Designator=C12 Old Footprint=CAPC3413X12N New Footprint=_0603
+Change Component Comment : Designator=C9 Old Comment=0.1uF New Comment=Cap
+Change Component Comment : Designator=C10 Old Comment=0.1uF New Comment=Cap
+Change Component Comment : Designator=C11 Old Comment=0.1uF New Comment=Cap
+Change Component Comment : Designator=C12 Old Comment=0.1uF New Comment=Cap
+Change Component Comment : Designator=C8 Old Comment=10 nF New Comment=Cap
+Change component parameters: Designator = "C8"; Footprint = "_0603"; UniqueID = "\WIWGQFSH"
+Change component parameters. Clean all parameters for all variants
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C9"; Footprint = "_0603"; UniqueID = "\SXSAKWBB"
+Change component parameters. Clean all parameters for all variants
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C10"; Footprint = "_0603"; UniqueID = "\IPNHYNYI"
+Change component parameters. Clean all parameters for all variants
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C11"; Footprint = "_0603"; UniqueID = "\QULQHYYT"
+Change component parameters. Clean all parameters for all variants
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Change component parameters: Designator = "C12"; Footprint = "_0603"; UniqueID = "\CPIBIOFI"
+Change component parameters. Clean all parameters for all variants
+Change component parameters (AddParameter): Name = "Value"; Value = "100nF"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=C8-1
+Added Pin To Net: NetName=+3.3 Pin=C8-2
+Added Pin To Net: NetName=GND Pin=C9-1
+Added Pin To Net: NetName=GND Pin=C10-1
+Added Pin To Net: NetName=+3.3 Pin=C10-2
+Added Pin To Net: NetName=NetC9_2 Pin=C9-2
+Added Pin To Net: NetName=NetC9_2 Pin=U3-10
+Added Net: Name=NetC9_2

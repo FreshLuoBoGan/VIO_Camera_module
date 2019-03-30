@@ -1,0 +1,8 @@
+Removed Pin From Net: NetName=AUX_RXD Pin=J4-2
+Removed Pin From Net: NetName=AUX_TXD Pin=J4-3
+Added Pin To Net: NetName=AUX_TXD Pin=J4-2
+Added Pin To Net: NetName=AUX_RXD Pin=J4-3
+Added Room: Name=Camera_Schematics
+Added Room: Name=IMU_Schematics
+Added Room: Name=STM32F4_Schematics
+Added Room: Name=USB3_Controller_Schematics

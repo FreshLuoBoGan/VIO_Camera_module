@@ -1,0 +1,9 @@
+Removed Pin From Net: NetName=NetJ3_2 Pin=U6-6
+Removed Pin From Net: NetName=NetJ3_3 Pin=U6-7
+Added Pin To Net: NetName=NetJ3_3 Pin=U6-6
+Added Pin To Net: NetName=NetJ3_2 Pin=U6-7
+Added Member To Class: ClassName=Camera_Schematics Member=Component U1 MT9V034
+Added Room: Name=Camera_Schematics
+Added Room: Name=IMU_Schematics
+Added Room: Name=STM32F4_Schematics
+Added Room: Name=USB3_Controller_Schematics

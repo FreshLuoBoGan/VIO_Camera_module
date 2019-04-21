@@ -13387,14 +13387,14 @@ OUTPUT(UVC_AN75779.elf elf32-littlearm)
  .debug_ranges  0x00000148       0xc8 ./sensor.o
  .debug_ranges  0x00000210      0x198 ./uvc.o
 
-.debug_str      0x00000000     0x46de
+.debug_str      0x00000000     0x475a
  .debug_str     0x00000000     0x16a8 ./cyfxtx.o
                                0x171d (size before relaxing)
- .debug_str     0x000016a8      0x29a ./cyfxuvcdscr.o
-                                0x3fb (size before relaxing)
- .debug_str     0x00001942      0x197 ./sensor.o
+ .debug_str     0x000016a8      0x316 ./cyfxuvcdscr.o
+                                0x437 (size before relaxing)
+ .debug_str     0x000019be      0x197 ./sensor.o
                                 0xccf (size before relaxing)
- .debug_str     0x00001ad9     0x2c05 ./uvc.o
+ .debug_str     0x00001b55     0x2c05 ./uvc.o
                                0x3f34 (size before relaxing)
 
 .debug_frame    0x00000000     0x11e8

@@ -823,35 +823,32 @@ const uint8_t CyFxUSBSSConfigDscr[] =
         0x24,                           /* Class-specific VS I/f Type */
         0x04,                           /* Subtype : uncompressed format I/F */
         0x01,                           /* Format desciptor index */
-        0x01,                           /* Number of frame descriptor followed *///My Format definition
-        0x7B, 0xEB, 0x36, 0xE4,       /*MEDIASUBTYPE_RGB565 GUID: E436EB7B-524F-11CE-9F53-0020AF0BA770  */
-        //0x59,0x55,0x59,0x32,			/* GUID used to identify streaming-encoding format: YUY2  */
-        //0x7D, 0xEB, 0x36, 0xE4,             /*MEDIASUBTYPE_RGB888 GUID: E436EB7D-524F-11CE-9F53-0020AF0BA770  */
-        0x4F, 0x52, 0xCE, 0x11,
-        0x9F, 0x53, 0x00, 0x20,
-        0xAF, 0x0B, 0xA7, 0x70,
+        0x01,                           /* Number of frame descriptor followed */
+        0x59,0x55,0x59,0x32,            /* GUID used to identify streaming-encoding format: YUY2  */
+        0x00,0x00,0x10,0x00,
+        0x80,0x00,0x00,0xAA,
+        0x00,0x38,0x9B,0x71,
         0x10,                           /* Number of bits per pixel */
         0x01,                           /* Optimum Frame Index for this stream: 1 */
-        0x2F,                           /* X dimension of the picture aspect ratio; Non-interlaced */
-        0x1E,                           /* Y dimension of the pictuer aspect ratio: Non-interlaced */
+        0x10,                           /* X dimension of the picture aspect ratio; Non-interlaced */
+        0x09,                           /* Y dimension of the pictuer aspect ratio: Non-interlaced */
         0x00,                           /* Interlace Flags: Progressive scanning, no interlace */
         0x00,                           /* duplication of the video stream restriction: 0 - no restriction */
-//*********************************************
+
         /* Class specific Uncompressed VS frame descriptor */
         0x1E,                           /* Descriptor size */
         0x24,                           /* Descriptor type*/
         0x05,                           /* Subtype: uncompressed frame I/F */
         0x01,                           /* Frame Descriptor Index */
         0x01,                           /* Still image capture method 1 supported */
-        0xF0, 0x02,                     /* Width in pixel *///My Resolution Settings
+        0xF0, 0x02,                     /* Width in pixel */
         0xE0, 0x01,                     /* Height in pixel */
         0x00,0x50,0x97,0x31,            /* Min bit rate bits/s. */
         0x00,0x50,0x97,0x31,            /* Max bit rate bits/s. */
-        0x00,0x08,0x16,0x00,            /* Maximum video or still frame size in bytes(Deprecated)*/
-        0x15, 0x16, 0x05, 0x00,         /* 30fps frame rate*/
-        //0x2a, 0xc2, 0xa, 0x00,         /* 60fps */
+        0x00,0xA4,0x1F,0x00,            /* Maximum video or still frame size in bytes(Deprecated)*/
+        0x0A, 0x8B, 0x02, 0x00,         /* 60fps */
         0x01,
-        0x15,0x16,0x05,0x00,
+        0x0A, 0x8B, 0x02, 0x00,
 
         /* Endpoint Descriptor for BULK Streaming Video Data */
         0x07,                           /* Descriptor size */

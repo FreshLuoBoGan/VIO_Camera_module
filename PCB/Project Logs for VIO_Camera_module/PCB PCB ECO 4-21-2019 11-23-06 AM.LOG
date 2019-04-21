@@ -1,0 +1,24 @@
+Removed Pin From Net: NetName=CD9 Pin=U7-10
+Removed Pin From Net: NetName=CD8 Pin=U7-11
+Removed Pin From Net: NetName=CD7 Pin=U7-12
+Removed Pin From Net: NetName=CD6 Pin=U7-13
+Removed Pin From Net: NetName=CD5 Pin=U7-14
+Removed Pin From Net: NetName=CD4 Pin=U7-15
+Removed Pin From Net: NetName=CD3 Pin=U7-16
+Removed Pin From Net: NetName=CD2 Pin=U7-17
+Removed Pin From Net: NetName=CD1 Pin=U7-18
+Removed Pin From Net: NetName=CD0 Pin=U7-19
+Added Pin To Net: NetName=VBAT Pin=C12-1
+Added Pin To Net: NetName=VBAT Pin=U4-6
+Added Pin To Net: NetName=CD9 Pin=U7-12
+Added Pin To Net: NetName=CD8 Pin=U7-13
+Added Pin To Net: NetName=CD7 Pin=U7-14
+Added Pin To Net: NetName=CD6 Pin=U7-15
+Added Pin To Net: NetName=CD5 Pin=U7-16
+Added Pin To Net: NetName=CD4 Pin=U7-17
+Added Pin To Net: NetName=CD3 Pin=U7-18
+Added Pin To Net: NetName=CD2 Pin=U7-19
+Added Room: Name=Camera_Schematics
+Added Room: Name=IMU_Schematics
+Added Room: Name=STM32F4_Schematics
+Added Room: Name=USB3_Controller_Schematics

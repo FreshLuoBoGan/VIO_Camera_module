@@ -1,4 +1,4 @@
-07:50:53 **** Incremental Build of configuration Release for project UVC_AN75779 ****
+01:56:18 **** Incremental Build of configuration Release for project UVC_AN75779 ****
 cs-make all 
 'Building file: ../cyfxuvcdscr.c'
 'Invoking: Cross ARM C Compiler'
@@ -31,5 +31,5 @@ Copying data from program header:
 	Addr=0x40030000 Size(words)=0x000007bd FileSize=0x00000183 Offset=0x00020000 Flags=0x00000006
 ' '
 
-07:50:55 Build Finished (took 1s.971ms)
+01:56:20 Build Finished (took 1s.970ms)
 

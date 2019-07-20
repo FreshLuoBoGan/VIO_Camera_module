@@ -58,8 +58,8 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define CAM_EXPOS_Pin GPIO_PIN_2
-#define CAM_EXPOS_GPIO_Port GPIOE
+#define CAM_EXPOSE_Pin GPIO_PIN_2
+#define CAM_EXPOSE_GPIO_Port GPIOE
 #define CAM_SYNC_Pin GPIO_PIN_3
 #define CAM_SYNC_GPIO_Port GPIOE
 #define CAM_SYNC_EXTI_IRQn EXTI3_IRQn

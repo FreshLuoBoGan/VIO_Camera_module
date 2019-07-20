@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=C:/Users/Asus/Desktop/Temp_project/VIO_STM_Firmware/Inc
+HeaderPath=D:/My_Projects/Electronics_Projects/Hobby_Projects/VIO_Camera_module/Firmwares/VIO_STM_Firmware/Inc
 HeaderFiles=usb_device.h;usbd_conf.h;usbd_desc.h;usbd_cdc_if.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;
-SourcePath=C:/Users/Asus/Desktop/Temp_project/VIO_STM_Firmware/Src
+SourcePath=D:/My_Projects/Electronics_Projects/Hobby_Projects/VIO_Camera_module/Firmwares/VIO_STM_Firmware/Src
 SourceFiles=usb_device.c;usbd_conf.c;usbd_desc.c;usbd_cdc_if.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;
 
 [PreviousLibFiles]

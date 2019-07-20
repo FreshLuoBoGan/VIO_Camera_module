@@ -96,7 +96,70 @@ static void MX_TIM14_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#define CAM_ADDRESS 0x48<<1
+void mtWriteReg(uint8_t address,uint16_t val){
+	uint8_t data[3];
+	data[2]=val&0xff;
+	data[1]=(val>>8)&0xff;
+	data[0]=address;
+  HAL_I2C_Master_Transmit(&hi2c1,CAM_ADDRESS,data,3,100);
+}
+uint16_t mtReadReg(uint8_t address){
+  uint8_t data[2]={0,0};
+	uint8_t addr=address;
+  HAL_I2C_Master_Transmit(&hi2c1,CAM_ADDRESS,&addr,1,100);
+	HAL_I2C_Master_Receive(&hi2c1,CAM_ADDRESS,data,2,100);
+	return (data[0]<<8)|(data[1]);
+}
 
+void LVDS_Enable(void){
+	uint16_t reg_val=0;
+	reg_val=mtReadReg(0xb3);
+	reg_val&=~(1<<4);
+	mtWriteReg(0xb3,reg_val);
+	HAL_Delay(1);
+  reg_val=mtReadReg(0xb1);
+	reg_val&=~(1<<1);
+	mtWriteReg(0xb1,reg_val);
+	HAL_Delay(1);
+	reg_val=mtReadReg(0x0c);
+	reg_val&=~(1<<4);
+	mtWriteReg(0x0c,reg_val);
+	HAL_Delay(10);
+	reg_val|=(1<<4);
+	mtWriteReg(0x0c,reg_val);
+	HAL_Delay(10);
+}
+
+void SLAVE_Enable(void){
+	uint16_t reg_val=0;
+	reg_val=0x380;
+	mtWriteReg(0x07,reg_val);
+	HAL_Delay(10);
+}
+void SNAPSHOT_MODE_Enable(void){
+	uint16_t reg_val=0;
+	reg_val=0x190;
+	mtWriteReg(0x07,reg_val);
+	HAL_Delay(10);
+}
+void LVDS_SYNC_ENABLE(void){
+	mtWriteReg(0xb5,1);
+	HAL_Delay(1);
+}
+
+void LVDS_SYNC_DESABLE(void){
+	mtWriteReg(0xb5,0);
+	HAL_Delay(1);
+}
+
+void resetSlave(void)
+{
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_RESET);
+		HAL_Delay(3000);
+		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET);
+
+}
 /* USER CODE END 0 */
 
 /**
@@ -146,9 +209,11 @@ int main(void)
 	HAL_SPI_Transmit(&hspi1,&data,1,100); //init the spi interface pin states
 	HAL_Delay(10);
 	mpuBegin();
+	HAL_Delay(10);
 	enableDataReadyInterrupt();
 	timeManagerInit(&htim14); //Start the time manager stack for creating time stamps
-
+	SNAPSHOT_MODE_Enable();
+	int cntr=0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -160,6 +225,12 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		if(IMU_DATA_READY_FLAG)//IMU Data is ready, send the data through the USB Port
 		{
+			cntr++;
+			if(cntr>=50){
+				cntr=0;
+				HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_RESET);	
+			}
 			IMU_DATA_READY_FLAG=0;
 			mpuReadSensor(&sensorData);
 		  Packet.Data.Data=sensorData;
@@ -583,6 +654,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOE, CAM_EXPOSE_Pin|IMU_SYNC_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -591,14 +665,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI1_CS_GPIO_Port, SPI1_CS_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(IMU_SYNC_GPIO_Port, IMU_SYNC_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : CAM_EXPOS_Pin */
-  GPIO_InitStruct.Pin = CAM_EXPOS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pins : CAM_EXPOSE_Pin IMU_SYNC_Pin */
+  GPIO_InitStruct.Pin = CAM_EXPOSE_Pin|IMU_SYNC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(CAM_EXPOS_GPIO_Port, &GPIO_InitStruct);
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : CAM_SYNC_Pin */
   GPIO_InitStruct.Pin = CAM_SYNC_Pin;
@@ -626,13 +698,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SPI1_CS_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : IMU_SYNC_Pin */
-  GPIO_InitStruct.Pin = IMU_SYNC_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(IMU_SYNC_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : IMU_IRQ_Pin */
   GPIO_InitStruct.Pin = IMU_IRQ_Pin;

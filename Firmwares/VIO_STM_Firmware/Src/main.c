@@ -61,6 +61,11 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+CAN_RxHeaderTypeDef RMess;
+CAN_TxHeaderTypeDef TMess;
+uint8_t TxData[8] = {0};
+uint32_t TxMailBox;
+
 volatile int IMU_DATA_READY_FLAG=0;
   char outdata[100];
 		struct mpuSensorData sensorData;
@@ -171,6 +176,36 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	Packet.Data.h1='a';
 	Packet.Data.h1='b';
+		uint8_t outdata[8];
+	int transmitGo=0;
+	struct mpuSensorData sensorData;
+	struct DPL{
+		int16_t h1;
+		int16_t h2;
+		struct mpuSensorData Data;
+	};
+
+	union{
+	struct{
+		int16_t a;
+		int16_t b;
+		int16_t c;
+	}Data;
+	uint8_t buffer[6];
+	}IMU_Mess;
+	union{
+		struct{
+			int32_t barometer;
+		}Data;
+		uint8_t buffer[4];
+	}Barometer_Mess;
+
+	
+	TMess.RTR = CAN_RTR_DATA;
+  TMess.IDE = CAN_ID_STD;
+  TMess.DLC = 0x2;
+	TMess.StdId=0x1;
+	TMess.TransmitGlobalTime = DISABLE;
 	
   /* USER CODE END 1 */
 
@@ -213,6 +248,25 @@ int main(void)
 	enableDataReadyInterrupt();
 	timeManagerInit(&htim14); //Start the time manager stack for creating time stamps
 	SNAPSHOT_MODE_Enable();
+	if (HAL_CAN_Start(&hcan1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+	CAN_FilterTypeDef  sFilterConfig;
+	sFilterConfig.FilterBank = 0;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  sFilterConfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  sFilterConfig.FilterIdHigh = 0x0000;
+  sFilterConfig.FilterIdLow = 0x0000;
+  sFilterConfig.FilterMaskIdHigh = 0x0000;
+  sFilterConfig.FilterMaskIdLow = 0x0000;
+  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  sFilterConfig.FilterActivation = ENABLE;
+	
+	if (HAL_CAN_ConfigFilter(&hcan1, &sFilterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
 	int cntr=0;
   /* USER CODE END 2 */
 
@@ -239,7 +293,33 @@ int main(void)
 		//sprintf(outdata,"%d,%d,%d,%d,%d,%d,%d,%d,%d\n",sensorData.ax,sensorData.ay,sensorData.az,sensorData.gx,sensorData.gy,sensorData.gz,sensorData.hx,sensorData.hy,sensorData.hz);
 		//sprintf(outdata,"%d\n",sensorData.ax);
 		//CDC_Transmit_FS((uint8_t *)outdata,sizeof(outdata));
-			CDC_Transmit_FS(Packet.buffer,sizeof(Packet.buffer));
+			//CDC_Transmit_FS(Packet.buffer,sizeof(Packet.buffer));
+			TMess.DLC=sizeof(IMU_Mess.buffer);
+			TMess.StdId=0x01; //Accelerometer
+			IMU_Mess.Data.a=sensorData.ax;
+			IMU_Mess.Data.b=sensorData.ay;
+			IMU_Mess.Data.c=sensorData.az;
+			memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
+			if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
+			TMess.DLC=sizeof(IMU_Mess.buffer);
+			TMess.StdId=0x02; //gyroscope
+			IMU_Mess.Data.a=sensorData.gx;
+			IMU_Mess.Data.b=sensorData.gy;
+			IMU_Mess.Data.c=sensorData.gz;
+			memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
+			if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
+			TMess.DLC=sizeof(IMU_Mess.buffer);
+			TMess.StdId=0x03; //magnetometer
+			IMU_Mess.Data.a=sensorData.hx;
+			IMU_Mess.Data.b=sensorData.hy;
+			IMU_Mess.Data.c=sensorData.hz;
+			memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
+			if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
+			//TMess.DLC=sizeof(Barometer_Mess.buffer);
+			//TMess.StdId=0x04; //barometer
+			//Barometer_Mess.Data.barometer=35;
+			//memcpy((uint8_t*)outdata,Barometer_Mess.buffer,sizeof(Barometer_Mess.buffer));
+			while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)==0);
 		}
   }
   /* USER CODE END 3 */
@@ -303,11 +383,11 @@ static void MX_CAN1_Init(void)
 
   /* USER CODE END CAN1_Init 1 */
   hcan1.Instance = CAN1;
-  hcan1.Init.Prescaler = 16;
+  hcan1.Init.Prescaler = 14;
   hcan1.Init.Mode = CAN_MODE_NORMAL;
-  hcan1.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan1.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan1.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan1.Init.SyncJumpWidth = CAN_SJW_2TQ;
+  hcan1.Init.TimeSeg1 = CAN_BS1_3TQ;
+  hcan1.Init.TimeSeg2 = CAN_BS2_2TQ;
   hcan1.Init.TimeTriggeredMode = DISABLE;
   hcan1.Init.AutoBusOff = DISABLE;
   hcan1.Init.AutoWakeUp = DISABLE;

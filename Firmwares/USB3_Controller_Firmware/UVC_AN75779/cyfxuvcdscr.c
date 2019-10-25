@@ -846,9 +846,9 @@ const uint8_t CyFxUSBSSConfigDscr[] =
         0x00,0x50,0x97,0x31,            /* Min bit rate bits/s. */
         0x00,0x50,0x97,0x31,            /* Max bit rate bits/s. */
         0x00,0xA4,0x1F,0x00,            /* Maximum video or still frame size in bytes(Deprecated)*/
-        0x0A, 0x8B, 0x02, 0x00,         /* 60fps */
+        0x80, 0x1A, 0x06, 0x00,         /* 60fps */
         0x01,
-        0x0A, 0x8B, 0x02, 0x00,
+        0x80, 0x1A, 0x06, 0x00 ,
 
         /* Endpoint Descriptor for BULK Streaming Video Data */
         0x07,                           /* Descriptor size */

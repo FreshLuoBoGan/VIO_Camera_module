@@ -27,6 +27,7 @@
 #include "MPU9250_SPI.h"
 #include "time_keeper.h"
 #include "usbd_cdc_if.h"
+#include "mt9v034.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,27 +59,30 @@ TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 CAN_RxHeaderTypeDef RMess;
 CAN_TxHeaderTypeDef TMess;
+uint8_t testRxBuffer[32];
 uint8_t TxData[8] = {0};
 uint32_t TxMailBox;
-
+uint32_t len=0;
 volatile int IMU_DATA_READY_FLAG=0;
   char outdata[100];
 		struct mpuSensorData sensorData;
 	struct DPL{
-		int16_t h1;
-		int16_t h2;
+		int8_t h1;
+		int8_t h2;
+	  int8_t h3;
+		int8_t h4;
 		struct mpuSensorData Data;
 		int64_t cameraTimeStamp;
 		int64_t imuTimeStamp;
+		int32_t togglingField;
 	};
 	union{
 		struct DPL Data;
-		uint8_t buffer[24+16]; // 16 is added to acount for the Time stamps
+		uint8_t buffer[24+16 +4]; // 16 is added to acount for the Time stamps
 	  }Packet;
 /* USER CODE END PV */
 
@@ -93,7 +97,6 @@ static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_USART3_UART_Init(void);
 static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -101,70 +104,7 @@ static void MX_TIM14_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define CAM_ADDRESS 0x48<<1
-void mtWriteReg(uint8_t address,uint16_t val){
-	uint8_t data[3];
-	data[2]=val&0xff;
-	data[1]=(val>>8)&0xff;
-	data[0]=address;
-  HAL_I2C_Master_Transmit(&hi2c1,CAM_ADDRESS,data,3,100);
-}
-uint16_t mtReadReg(uint8_t address){
-  uint8_t data[2]={0,0};
-	uint8_t addr=address;
-  HAL_I2C_Master_Transmit(&hi2c1,CAM_ADDRESS,&addr,1,100);
-	HAL_I2C_Master_Receive(&hi2c1,CAM_ADDRESS,data,2,100);
-	return (data[0]<<8)|(data[1]);
-}
 
-void LVDS_Enable(void){
-	uint16_t reg_val=0;
-	reg_val=mtReadReg(0xb3);
-	reg_val&=~(1<<4);
-	mtWriteReg(0xb3,reg_val);
-	HAL_Delay(1);
-  reg_val=mtReadReg(0xb1);
-	reg_val&=~(1<<1);
-	mtWriteReg(0xb1,reg_val);
-	HAL_Delay(1);
-	reg_val=mtReadReg(0x0c);
-	reg_val&=~(1<<4);
-	mtWriteReg(0x0c,reg_val);
-	HAL_Delay(10);
-	reg_val|=(1<<4);
-	mtWriteReg(0x0c,reg_val);
-	HAL_Delay(10);
-}
-
-void SLAVE_Enable(void){
-	uint16_t reg_val=0;
-	reg_val=0x380;
-	mtWriteReg(0x07,reg_val);
-	HAL_Delay(10);
-}
-void SNAPSHOT_MODE_Enable(void){
-	uint16_t reg_val=0;
-	reg_val=0x190;
-	mtWriteReg(0x07,reg_val);
-	HAL_Delay(10);
-}
-void LVDS_SYNC_ENABLE(void){
-	mtWriteReg(0xb5,1);
-	HAL_Delay(1);
-}
-
-void LVDS_SYNC_DESABLE(void){
-	mtWriteReg(0xb5,0);
-	HAL_Delay(1);
-}
-
-void resetSlave(void)
-{
-		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_RESET);
-		HAL_Delay(3000);
-		HAL_GPIO_WritePin(GPIOA,GPIO_PIN_4,GPIO_PIN_SET);
-
-}
 /* USER CODE END 0 */
 
 /**
@@ -174,8 +114,6 @@ void resetSlave(void)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	Packet.Data.h1='a';
-	Packet.Data.h1='b';
 		uint8_t outdata[8];
 	int transmitGo=0;
 	struct mpuSensorData sensorData;
@@ -235,7 +173,6 @@ int main(void)
   MX_SPI3_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  MX_USART3_UART_Init();
   MX_USB_DEVICE_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
@@ -244,10 +181,11 @@ int main(void)
 	HAL_SPI_Transmit(&hspi1,&data,1,100); //init the spi interface pin states
 	HAL_Delay(10);
 	mpuBegin();
+  Packet.Data.togglingField=0;
 	HAL_Delay(10);
 	enableDataReadyInterrupt();
-	timeManagerInit(&htim14); //Start the time manager stack for creating time stamps
-	SNAPSHOT_MODE_Enable();
+	timeManagerInit(&htim14); //Start the time manager stack for creating time stamps	
+	HAL_GPIO_WritePin(ZED_SYNCH_SIGNAL_GPIO_Port,ZED_SYNCH_SIGNAL_Pin,GPIO_PIN_SET);
 	if (HAL_CAN_Start(&hcan1) != HAL_OK)
   {
     Error_Handler();
@@ -267,7 +205,13 @@ int main(void)
   {
     Error_Handler();
   }
-	int cntr=0;
+	int cntr=0,cntr2=0;
+	//Set Camera Parameters
+	SNAPSHOT_MODE_Enable();
+	AGC_AEC_DISABLE();
+	SET_EXPOSURE(240);
+	SET_DIGITAL_GAIN(12);
+	SET_ANALOG_GAIN(30);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -279,47 +223,61 @@ int main(void)
     /* USER CODE BEGIN 3 */
 		if(IMU_DATA_READY_FLAG)//IMU Data is ready, send the data through the USB Port
 		{
-			cntr++;
-			if(cntr>=50){
-				cntr=0;
-				HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_SET);
-				HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_RESET);	
-			}
 			IMU_DATA_READY_FLAG=0;
 			mpuReadSensor(&sensorData);
 		  Packet.Data.Data=sensorData;
 			Packet.Data.imuTimeStamp=IMU_TimeStamp();
 			Packet.Data.cameraTimeStamp=Camera_TimeStamp();
-		//sprintf(outdata,"%d,%d,%d,%d,%d,%d,%d,%d,%d\n",sensorData.ax,sensorData.ay,sensorData.az,sensorData.gx,sensorData.gy,sensorData.gz,sensorData.hx,sensorData.hy,sensorData.hz);
-		//sprintf(outdata,"%d\n",sensorData.ax);
-		//CDC_Transmit_FS((uint8_t *)outdata,sizeof(outdata));
-			//CDC_Transmit_FS(Packet.buffer,sizeof(Packet.buffer));
-			TMess.DLC=sizeof(IMU_Mess.buffer);
-			TMess.StdId=0x01; //Accelerometer
-			IMU_Mess.Data.a=sensorData.ax;
-			IMU_Mess.Data.b=sensorData.ay;
-			IMU_Mess.Data.c=sensorData.az;
-			memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
-			if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
-			TMess.DLC=sizeof(IMU_Mess.buffer);
-			TMess.StdId=0x02; //gyroscope
-			IMU_Mess.Data.a=sensorData.gx;
-			IMU_Mess.Data.b=sensorData.gy;
-			IMU_Mess.Data.c=sensorData.gz;
-			memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
-			if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
-			TMess.DLC=sizeof(IMU_Mess.buffer);
-			TMess.StdId=0x03; //magnetometer
-			IMU_Mess.Data.a=sensorData.hx;
-			IMU_Mess.Data.b=sensorData.hy;
-			IMU_Mess.Data.c=sensorData.hz;
-			memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
-			if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
-			//TMess.DLC=sizeof(Barometer_Mess.buffer);
-			//TMess.StdId=0x04; //barometer
-			//Barometer_Mess.Data.barometer=35;
-			//memcpy((uint8_t*)outdata,Barometer_Mess.buffer,sizeof(Barometer_Mess.buffer));
-			while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)==0);
+			Packet.Data.h1='a';
+			Packet.Data.h2='b';
+			Packet.Data.h3='c';
+			Packet.Data.h4='\n';
+			cntr++;
+			cntr2++;
+			HAL_GPIO_WritePin(ZED_SYNCH_SIGNAL_GPIO_Port,ZED_SYNCH_SIGNAL_Pin,GPIO_PIN_SET);
+			HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_RESET);
+			if(cntr==40)
+			{
+				cntr=0;
+				HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_SET);
+				HAL_GPIO_WritePin(ZED_SYNCH_SIGNAL_GPIO_Port,ZED_SYNCH_SIGNAL_Pin,GPIO_PIN_RESET);
+				Packet.Data.togglingField=~Packet.Data.togglingField;
+			}
+			//if(cntr2==5)
+			//{
+				//cntr2=0;
+				CDC_Transmit_FS(Packet.buffer,sizeof(Packet.buffer));
+			//}
+
+				if(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)==2)
+				{
+					TMess.DLC=sizeof(IMU_Mess.buffer);
+					TMess.StdId=0x01; //Accelerometer
+					IMU_Mess.Data.a=sensorData.ax;
+					IMU_Mess.Data.b=sensorData.ay;
+					IMU_Mess.Data.c=sensorData.az;
+					memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
+					if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
+					TMess.DLC=sizeof(IMU_Mess.buffer);
+					TMess.StdId=0x02; //gyroscope
+					IMU_Mess.Data.a=sensorData.gx;
+					IMU_Mess.Data.b=sensorData.gy;
+					IMU_Mess.Data.c=sensorData.gz;
+					memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
+					if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
+					TMess.DLC=sizeof(IMU_Mess.buffer);
+					TMess.StdId=0x03; //magnetometer
+					IMU_Mess.Data.a=sensorData.hx;
+					IMU_Mess.Data.b=sensorData.hy;
+					IMU_Mess.Data.c=sensorData.hz;
+					memcpy((uint8_t*)outdata,IMU_Mess.buffer,sizeof(IMU_Mess.buffer));
+					if(HAL_CAN_AddTxMessage(&hcan1, &TMess, outdata, &TxMailBox)!=HAL_OK){Error_Handler();}
+					//TMess.DLC=sizeof(Barometer_Mess.buffer);
+					//TMess.StdId=0x04; //barometer
+					//Barometer_Mess.Data.barometer=35;
+					//memcpy((uint8_t*)outdata,Barometer_Mess.buffer,sizeof(Barometer_Mess.buffer));
+					//while(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)==0);
+			}
 		}
   }
   /* USER CODE END 3 */
@@ -684,39 +642,6 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -737,7 +662,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, CAM_EXPOSE_Pin|IMU_SYNC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPI2_CS_GPIO_Port, SPI2_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ZED_SYNCH_SIGNAL_Pin|SPI2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, GPIO_PIN_RESET);
@@ -758,12 +683,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(CAM_SYNC_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SPI2_CS_Pin */
-  GPIO_InitStruct.Pin = SPI2_CS_Pin;
+  /*Configure GPIO pins : ZED_SYNCH_SIGNAL_Pin SPI2_CS_Pin */
+  GPIO_InitStruct.Pin = ZED_SYNCH_SIGNAL_Pin|SPI2_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(SPI2_CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SPI3_CS_Pin */
   GPIO_InitStruct.Pin = SPI3_CS_Pin;

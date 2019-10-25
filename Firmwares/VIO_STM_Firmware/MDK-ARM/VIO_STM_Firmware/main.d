@@ -52,4 +52,4 @@ vio_stm_firmware\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usb
 vio_stm_firmware\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h
 vio_stm_firmware\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h
 vio_stm_firmware\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
-vio_stm_firmware\main.o: ..\MDK-ARM\mt9v034.h
+vio_stm_firmware\main.o: ../Inc/mt9v034.h

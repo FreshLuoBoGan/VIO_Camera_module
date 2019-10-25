@@ -1,5 +1,5 @@
 vio_stm_firmware\mt9v034.o: mt9v034.c
-vio_stm_firmware\mt9v034.o: mt9v034.h
+vio_stm_firmware\mt9v034.o: ../Inc/mt9v034.h
 vio_stm_firmware\mt9v034.o: ../Inc/main.h
 vio_stm_firmware\mt9v034.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 vio_stm_firmware\mt9v034.o: ../Inc/stm32f4xx_hal_conf.h

@@ -17,3 +17,4 @@ void LVDS_SYNC_DESABLE(void);
 void resetSlave(void);
 
 #endif
+

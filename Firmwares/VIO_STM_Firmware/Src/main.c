@@ -115,7 +115,6 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 		uint8_t outdata[8];
-	int transmitGo=0;
 	struct mpuSensorData sensorData;
 	struct DPL{
 		int16_t h1;
@@ -131,12 +130,7 @@ int main(void)
 	}Data;
 	uint8_t buffer[6];
 	}IMU_Mess;
-	union{
-		struct{
-			int32_t barometer;
-		}Data;
-		uint8_t buffer[4];
-	}Barometer_Mess;
+
 
 	
 	TMess.RTR = CAN_RTR_DATA;

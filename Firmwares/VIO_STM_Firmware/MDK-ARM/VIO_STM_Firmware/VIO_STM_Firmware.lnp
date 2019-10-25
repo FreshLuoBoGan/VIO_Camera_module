@@ -9,6 +9,7 @@
 "vio_stm_firmware\usbd_cdc_if.o"
 "vio_stm_firmware\stm32f4xx_it.o"
 "vio_stm_firmware\stm32f4xx_hal_msp.o"
+"vio_stm_firmware\mt9v034.o"
 "vio_stm_firmware\stm32f4xx_hal_pcd.o"
 "vio_stm_firmware\stm32f4xx_hal_pcd_ex.o"
 "vio_stm_firmware\stm32f4xx_ll_usb.o"

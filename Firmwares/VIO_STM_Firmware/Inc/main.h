@@ -63,6 +63,8 @@ void Error_Handler(void);
 #define CAM_SYNC_Pin GPIO_PIN_3
 #define CAM_SYNC_GPIO_Port GPIOE
 #define CAM_SYNC_EXTI_IRQn EXTI3_IRQn
+#define ZED_SYNCH_SIGNAL_Pin GPIO_PIN_10
+#define ZED_SYNCH_SIGNAL_GPIO_Port GPIOB
 #define SPI2_CS_Pin GPIO_PIN_12
 #define SPI2_CS_GPIO_Port GPIOB
 #define SPI3_CS_Pin GPIO_PIN_15

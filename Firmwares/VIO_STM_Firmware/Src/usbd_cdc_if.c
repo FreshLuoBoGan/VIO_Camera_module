@@ -23,7 +23,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "mt9v034.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,7 +32,9 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+uint8_t command[32];
+int inprogress=0,counter=0;
+int cmd=0;
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -132,7 +134,51 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
-
+void exteractCmd(int *cmd,int *argument)
+{
+	uint8_t p1[32];
+	uint8_t p2[32];
+	int tmp_counter=0;
+	while(command[tmp_counter]!=' ' && tmp_counter<counter)
+	{
+		p1[tmp_counter]=command[tmp_counter];
+		tmp_counter++;
+	}
+	tmp_counter++;
+	if(tmp_counter<counter)
+	{
+		memcpy((uint8_t *)p2,(uint8_t *)&command[tmp_counter],counter-tmp_counter);
+	}
+	else
+	{
+		*cmd=-1;
+		return;
+	}
+	*cmd=atoi((char *)p1);
+	*argument=atoi((char *)p2);
+}
+void executeCmd(void)
+{
+	int comd,arg;
+	if(counter>=3)
+	{
+		exteractCmd(&comd,&arg);
+		switch(comd)
+		{
+			case 1:
+				SET_EXPOSURE(arg);
+				break;
+			case 2:
+				SET_ANALOG_GAIN(arg);
+				break;
+			case 3:
+				SET_DIGITAL_GAIN(arg);
+				break;
+		}
+	}
+	
+	cmd=0;
+}
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
@@ -263,6 +309,31 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+	uint8_t data;
+	for(int i=0;i<*Len;i++)
+	{
+		data=Buf[i];
+		if(inprogress==0)
+		{
+			if(data=='G')
+				inprogress=1;
+			  counter=0;
+		}
+		else
+		{
+			if(data=='\r')
+			{
+				inprogress=0;
+				executeCmd();
+			}
+			else
+			{
+				command[counter]=data;
+				counter++;
+			}
+		}
+	}
+
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);

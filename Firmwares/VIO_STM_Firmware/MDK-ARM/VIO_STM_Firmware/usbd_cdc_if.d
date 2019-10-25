@@ -49,3 +49,4 @@ vio_stm_firmware\usbd_cdc_if.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ha
 vio_stm_firmware\usbd_cdc_if.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h
 vio_stm_firmware\usbd_cdc_if.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h
 vio_stm_firmware\usbd_cdc_if.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
+vio_stm_firmware\usbd_cdc_if.o: ..\MDK-ARM\mt9v034.h

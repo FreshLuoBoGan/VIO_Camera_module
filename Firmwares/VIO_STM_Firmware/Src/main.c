@@ -243,7 +243,7 @@ int main(void)
 				CDC_Transmit_FS(Packet.buffer,sizeof(Packet.buffer));
 			//}
 
-				if(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)==2)
+				if(HAL_CAN_GetTxMailboxesFreeLevel(&hcan1)>2)
 				{
 					TMess.DLC=sizeof(IMU_Mess.buffer);
 					TMess.StdId=0x01; //Accelerometer

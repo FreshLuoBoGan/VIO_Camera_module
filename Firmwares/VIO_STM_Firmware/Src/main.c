@@ -127,8 +127,9 @@ int main(void)
 		int16_t a;
 		int16_t b;
 		int16_t c;
+		int16_t tmp;
 	}Data;
-	uint8_t buffer[6];
+	uint8_t buffer[8];
 	}IMU_Mess;
 
 
@@ -226,16 +227,23 @@ int main(void)
 			Packet.Data.h2='b';
 			Packet.Data.h3='c';
 			Packet.Data.h4='\n';
+			IMU_Mess.Data.tmp=0;
 			cntr++;
 			cntr2++;
 			HAL_GPIO_WritePin(ZED_SYNCH_SIGNAL_GPIO_Port,ZED_SYNCH_SIGNAL_Pin,GPIO_PIN_SET);
 			HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(IR_TRACKER_SYC_OUT_GPIO_Port,IR_TRACKER_SYC_OUT_Pin,GPIO_PIN_RESET);
 			if(cntr==40)
 			{
 				cntr=0;
 				HAL_GPIO_WritePin(CAM_EXPOSE_GPIO_Port,CAM_EXPOSE_Pin,GPIO_PIN_SET);
 				HAL_GPIO_WritePin(ZED_SYNCH_SIGNAL_GPIO_Port,ZED_SYNCH_SIGNAL_Pin,GPIO_PIN_RESET);
+				HAL_GPIO_WritePin(IR_TRACKER_SYC_OUT_GPIO_Port,IR_TRACKER_SYC_OUT_Pin,GPIO_PIN_SET);
 				Packet.Data.togglingField=~Packet.Data.togglingField;
+				if(IMU_Mess.Data.tmp==0)
+					IMU_Mess.Data.tmp=1;
+				else
+					IMU_Mess.Data.tmp=0;
 			}
 			//if(cntr2==5)
 			//{
@@ -656,7 +664,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOE, CAM_EXPOSE_Pin|IMU_SYNC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ZED_SYNCH_SIGNAL_Pin|SPI2_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ZED_SYNCH_SIGNAL_Pin|IR_TRACKER_SYC_OUT_Pin|SPI2_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, GPIO_PIN_RESET);
@@ -677,19 +685,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(CAM_SYNC_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ZED_SYNCH_SIGNAL_Pin SPI2_CS_Pin */
-  GPIO_InitStruct.Pin = ZED_SYNCH_SIGNAL_Pin|SPI2_CS_Pin;
+  /*Configure GPIO pins : ZED_SYNCH_SIGNAL_Pin IR_TRACKER_SYC_OUT_Pin SPI2_CS_Pin */
+  GPIO_InitStruct.Pin = ZED_SYNCH_SIGNAL_Pin|IR_TRACKER_SYC_OUT_Pin|SPI2_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PB11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SPI3_CS_Pin */
